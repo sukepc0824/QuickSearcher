@@ -11,7 +11,7 @@ const engine = {
         icon: 'img/youtube.svg',
         suggestAPI: 'https://clients1.google.com/complete/search?hl=en&ds=yt&client=firefox&q=',
         searchLink: 'https://www.youtube.com/results?search_query=',
-        startPage: 'https://www.youtube.com/'
+        startPage: 'https://www.youtube.com'
     },
     wikipedia: {
         name: "Wikipedia",
