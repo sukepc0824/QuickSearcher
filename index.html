@@ -151,7 +151,7 @@
                     'marginTop': 184 - $(`.engine button[value='${engineName}']`).index('.engine button') * 124
                 }, 200);
                 $(`.engine button`).on("contextmenu", function () {
-                    goToSite('');
+                    window.location.href = engine[$(this).val()].startPage
                     return false;
                 })
                 $("#search-box").focus();
