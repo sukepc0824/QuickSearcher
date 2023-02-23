@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>searcher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/jquery-ui.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script src="js/jquery.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="js/engine-data.js"></script>
+</head>
+
+<body>
+    <div class="settings">
+        <div class="topber" lang="jp">設定</div>
+        <div class="topber" lang="en">Settings</div>
+        <div class="settings-contents">
+            <div class="object lang">
+                <div class="key" lang="jp">言語:</div>
+                <div class="key" lang="en">Language:</div>
+                <div class="value">
+                    <label class="selectbox">
+                        <select name="lang">
+                            <option value="jp">日本語</option>
+                            <option value="en">English</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <div class="border"></div>
+            <div class="object background">
+                <div class="key" lang="jp">背景:</div>
+                <div class="key" lang="en">Background:</div>
+                <div class="value">
+                    <label>
+                        <input type="radio" name="background" value="dynamic" checked>
+                        <img src="img/settings/timewallpaper.png">
+                        <p lang="jp">時間帯で変化</p>
+                        <p lang="en">Dynamic</p>
+                    </label>
+                    <label>
+                        <input type="radio" name="background" value="color">
+                        <img src="img/settings/colorwallpaper.png">
+                        <p lang="jp">カラーを選択</p>
+                        <p lang="en">Select color</p>
+                    </label>
+                </div>
+            </div>
+            <div class="object color disabled">
+                <div class="key" lang="jp">カラー:</div>
+                <div class="key" lang="en">Color:</div>
+                <div class="value">
+                    <input type="color">
+                </div>
+            </div>
+            <div class="object sort">
+                <div class="key" lang="jp">並び変え:</div>
+                <div class="key" lang="en">Sort order:</div>
+                <div class="value">
+                    <ul class="engine-sort"></ul>
+                    <button class="reset" lang="jp">並び順をリセット</button>
+                    <button class="reset" lang="en">Reset sort order</button>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <div class="link">
+                <a href="#">> Github</a>
+                <a href="#">> Developer Twitter</a>
+            </div>
+            <small>
+                &copy; 2023- スケ/SUKE. All Rights Reserved.
+            </small>
+        </footer>
+    </div>
+    <button class="open-settings">
+        <img src="img/settings/settings.svg">
+    </button>
+    <div class="contents">
+        <div class="background-color"></div>
+        <div class="engine"></div>
+        <div class="partition"></div>
+        <form>
+            <input type="text" name="search" id="search-box" autocomplete="off">
+        </form>
+        <div class="suggest"></div>
+    </div>
+    <script>
+        $(function () {
+            if (localStorage.hasOwnProperty('engineSort')) {
+                engineSortOrder = JSON.parse(localStorage.getItem("engineSort"));
+            } else {
+                engineSortOrder = ['google', 'youtube', 'wikipedia', 'twitter'];
+            }
+
+            function goToSite(word) {
+                if (word.length == 0) {
+                    window.location.href = engine[selectingEngine].startPage
+                } else {
+                    window.location.href = engine[selectingEngine].searchLink + word
+                }
+            }
+
+            function showSuggest(engineName, word) {
+                if (engine[selectingEngine].suggestAPI == undefined) {
+                    $(".suggest button").remove();
+                } else {
+                    $.ajax({
+                        url: engine[engineName].suggestAPI + word,
+                        type: 'GET',
+                        dataType: 'jsonp',
+                        jsonpCallback: 'callback'
+                    })
+                        .done(function (data) {
+                            $(".suggest button").remove();
+                            data[1].forEach(function (element, i) {
+                                $(`<button tabindex="${i + 1}">${element}<button>`).appendTo(".suggest");
+                                $(".suggest button:empty").remove();
+                            })
+                            $(".suggest button").on("click", function () {
+                                goToSite($(this).text())
+                            })
+
+                            $(".suggest button").on("mouseover", function () {
+                                $(".suggest button").removeClass("focus");
+                                $(this).addClass("focus");
+                            })
+
+                            $(".suggest button").on("mouseout", function () {
+                                $(".suggest button").removeClass("focus");
+                            })
+
+                        });
+                }
+            }
+
+            function focusSuggest(engineName) {
+                $(".engine button").removeClass("focus");
+                $(`.engine button[value='${engineName}']`).addClass("focus");
+                selectingEngine = engineName;
+                $("#search-box").attr("placeholder", engine[engineName].name + ' Search...')
+                showSuggest(selectingEngine, $("#search-box").val())
+                $(".engine").css({
+                    'marginTop': 184 - $(`.engine button[value='${engineName}']`).index('.engine button') * 124
+                }, 200)
+            }
+
+            function engineSort() {
+                $(".engine button").remove();
+                engineSortOrder.forEach(function (element, i) {
+                    $(`<button value="${element}">
+                      <img src="${engine[element].icon}">
+                   </button>`).appendTo(".engine");
+                    $(".engine button:first-child").addClass("focus") //最初の要素だけフォーカス
+                })
+                $(".engine button").on("click", function () {
+                    let engine = $(this).val()
+                    focusSuggest(engine)
+                })
+
+                $(".object.sort ul li").remove();
+                engineSortOrder.forEach(function (element, i) {
+                    $(`<li value="${element}">${engine[element].name}</li>`).appendTo(".object.sort ul");
+                })
+            }
+
+            engineSort();
+
+            function goToSite(word) {
+                if (word.length == 0) {
+                    window.location.href = engine[selectingEngine].startPage
+                } else {
+                    window.location.href = engine[selectingEngine].searchLink + word
+                }
+            }
+
+            $('form').submit(function () {
+                goToSite($("#search-box").val())
+                return false;
+            });
+
+            $("#search-box").keyup(e => {
+                if (e.code == 'ArrowDown' || e.code == 'ArrowUp') { } else {
+                    showSuggest(selectingEngine, $("#search-box").val());
+                }
+            });
+
+            $("#search-box").focus();
+
+            //ここの地獄ネストのコードどうにかならない？
+            $(window).keydown(e => {
+                if (e.code == 'ArrowUp') {
+                    if ($("#search-box").val().length == 0) {
+                        if (!$(".engine button.focus").prev().length) {
+                            return false;
+                        }
+                        focusSuggest($(".engine button.focus").prev().val())
+                    } else {
+                        if (!$(".suggest button.focus").prev().length) {
+                            return false;
+                        }
+                        $(".suggest button.focus").removeClass("focus").prev().addClass("focus");
+                        $("#search-box").val($(".suggest button.focus").text())
+                        return false;
+                    }
+                }
+                if (e.code == 'ArrowDown') {
+                    if ($("#search-box").val().length == 0) {
+                        if (!$(".engine button.focus").next().length) {
+                            return false;
+                        }
+                        focusSuggest($(".engine button.focus").next().val())
+                    } else {
+                        if ($(".suggest button").hasClass("focus")) {
+                            if (!$(".suggest button.focus").next().length) {
+                                return false;
+                            }
+                            $(".suggest button.focus").removeClass("focus").next().addClass("focus");
+                            $("#search-box").val($(".suggest button.focus").text())
+                        } else {
+                            $(".suggest button:first-child").addClass("focus")
+                            $("#search-box").val($(".suggest button.focus").text())
+                        }
+                        return false;
+                    }
+                }
+            })
+
+            //設定項目
+            $('button.open-settings').on("click", function () {
+                $('.settings').toggleClass('active')
+            })
+
+            //言語設定
+            function langSet(lang) {
+                if (lang === 'jp') {
+                    $('[lang="en"]').hide();
+                    $('[lang="jp"]').show();
+                    localStorage.setItem("lang", 'jp');
+                }
+                if (lang === 'en') {
+                    $('[lang="jp"]').hide();
+                    $('[lang="en"]').show();
+                    localStorage.setItem("lang", 'en');
+                }
+            }
+
+            if (localStorage.hasOwnProperty('lang')) {
+                let lang = localStorage.getItem("lang")
+                langSet(lang);
+                $(".object.lang select").val(lang)
+            } else {
+                langSet('jp')
+            }
+
+            $(".object.lang select").on("change", function () {
+                langSet($(this).val())
+            })
+
+            //背景設定
+            function backgroundColorSet(color) {
+                if (color === 'dynamic') {
+                    $('.object.color').addClass("disabled");
+                    $('.background-color').removeAttr("style");
+                    localStorage.setItem("background", 'dynamic');
+                } else {
+                    $('.object.color').removeClass("disabled");
+                    $('.background-color').css({ "background": color })
+                    localStorage.setItem("background", color);
+                }
+            }
+
+            if (localStorage.hasOwnProperty('background')) {
+                let color = localStorage.getItem("background");
+                backgroundColorSet(color);
+                if (color === 'dynamic') {
+                    $('.object.background input[value="dynamic"]').prop("checked", true);
+                } else {
+                    $('.object.background input[value="color"]').prop("checked", true);
+                    $('.object.color input').val(color)
+                }
+            } else {
+                backgroundColorSet('dynamic');
+            }
+
+            $('.object.background input').on("click", function () {
+                if ($('.object.background input:checked').attr("value") === 'color') {
+                    backgroundColorSet($('.object.color input').val())
+                } else {
+                    backgroundColorSet("dynamic")
+                }
+            })
+
+            $(".object.color input").on("change", function () {
+                backgroundColorSet($(this).val())
+                localStorage.setItem("background", $(this).val());
+            })
+
+            $(".engine-sort").sortable({
+                revert: 220,
+                tolerance: 'pointer',
+                update: function () {
+                    engineSortOrder = $('.engine-sort').sortable("toArray", { attribute: 'value' });
+                    engineSort()
+                    localStorage.setItem("engineSort", JSON.stringify(engineSortOrder))
+                    focusSuggest(engineSortOrder[0])
+                }
+            });
+
+            $(".object.sort button.reset").on("click", function () {
+                localStorage.removeItem("engineSort");
+                engineSortOrder = ['google', 'youtube', 'wikipedia', 'twitter'];
+                engineSort('google')
+                focusSuggest(engineSortOrder[0])
+            })
+
+            focusSuggest(engineSortOrder[0])
+
+            //時間帯によって背景を変化
+            const currentTime = new Date().getHours();
+            const $background = $(".background-color");
+            switch (true) {
+                case currentTime >= 5 && currentTime < 7:
+                    $background.addClass("twilight")
+                    break;
+                case currentTime >= 7 && currentTime < 9:
+                    $background.addClass("sunrise")
+                    break;
+                case currentTime >= 9 && currentTime < 18:
+                    $background.addClass("day")
+                    break;
+                case currentTime >= 18 && currentTime < 21:
+                    $background.addClass("evening")
+                    break;
+                case currentTime >= 21 && currentTime < 22:
+                    $background.addClass("sunrise")
+                    break;
+            }
+        })
+    </script>
+</body>
+
+</html>
