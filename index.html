@@ -150,7 +150,7 @@
                 $(".engine").css({
                     'marginTop': 184 - $(`.engine button[value='${engineName}']`).index('.engine button') * 124
                 }, 200);
-                $(`.engine button.focus`).on("contextmenu", function () {
+                $(`.engine button`).on("contextmenu", function () {
                     goToSite('');
                     return false;
                 })
