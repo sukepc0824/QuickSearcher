@@ -72,7 +72,7 @@
         </div>
         <footer>
             <div class="link">
-                <a href="https://github.com/sukepc0824/QuickSearcher">> Github</a>
+                <a href="#">> Github</a>
                 <a href="https://twitter.com/pcsuke">> Developer Twitter</a>
             </div>
             <small>
@@ -149,7 +149,12 @@
                 showSuggest(selectingEngine, $("#search-box").val())
                 $(".engine").css({
                     'marginTop': 184 - $(`.engine button[value='${engineName}']`).index('.engine button') * 124
-                }, 200)
+                }, 200);
+                $(`.engine button.focus`).on("contextmenu", function () {
+                    goToSite('');
+                    return false;
+                })
+                //$("#search-box").focus();
             }
 
             function engineSort() {
@@ -173,14 +178,6 @@
 
             engineSort();
 
-            function goToSite(word) {
-                if (word.length == 0) {
-                    window.location.href = engine[selectingEngine].startPage
-                } else {
-                    window.location.href = engine[selectingEngine].searchLink + word
-                }
-            }
-
             $('form').submit(function () {
                 goToSite($("#search-box").val())
                 return false;
@@ -192,7 +189,7 @@
                 }
             });
 
-            $("#search-box").focus();
+            //$("#search-box").focus();
 
             //ここの地獄ネストのコードどうにかならない？
             $(window).keydown(e => {
@@ -340,7 +337,7 @@
                     $background.addClass("evening")
                     break;
                 case currentTime >= 21 && currentTime < 22:
-                    $background.addClass("sunrise")
+                    $background.addClass("twilight")
                     break;
             }
         })
