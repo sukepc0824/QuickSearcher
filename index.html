@@ -18,6 +18,21 @@
 </head>
 
 <body>
+    <div class="start-modal">
+        <img src="img/quicksearcher_icon.png" class="icon">
+        <h1>QuickSearcherへようこそ</h1>
+        <div class="user-guide">
+            <img src="img/start/cursor_key.png">
+            <p>矢印キーによる操作で素早く検索できます。キーボードのみで完結するため効率的です。</p>
+        </div>
+        <div class="user-guide">
+            <img src="img/start/mouse.png">
+            <p>検索エンジンのアイコンを左クリックで選択，右クリックでそのサイトのトップページに直接飛ぶことができます。</p>
+        </div>
+        <button>始めましょう</button>
+    </div>
+    <div class="overlay"></div>
+
     <div class="settings">
         <div class="topber" lang="jp">設定</div>
         <div class="topber" lang="en">Settings</div>
@@ -72,15 +87,15 @@
         </div>
         <footer>
             <div class="link">
-                <a href="https://github.com/sukepc0824/QuickSearcher">> Github</a>
-                <a href="https://twitter.com/pcsuke">> Developer Twitter</a>
+                <a href="#">>Github</a>
+                <a href="https://twitter.com/pcsuke">>Developer Twitter</a>
             </div>
             <small>
                 &copy; 2023- スケ/SUKE. All Rights Reserved.
             </small>
         </footer>
     </div>
-    <button class="open-settings">
+    <button class="open-settings top-button">
         <img src="img/settings/settings.svg">
     </button>
     <div class="contents">
@@ -94,6 +109,18 @@
     </div>
     <script>
         $(function () {
+            const keyName = 'visited';
+            if (!localStorage.getItem(keyName)) {
+                $('.start-modal').addClass("active")
+                localStorage.setItem(keyName, true);
+
+            }
+
+            $('.start-modal button').on("click", function () {
+                $(this).parents(".start-modal").removeClass("active")
+            })
+
+
             if (localStorage.hasOwnProperty('engineSort')) {
                 engineSortOrder = JSON.parse(localStorage.getItem("engineSort"));
             } else {
@@ -172,9 +199,15 @@
 
                 $(".object.sort ul li").remove();
                 engineSortOrder.forEach(function (element, i) {
-                    $(`<li value="${element}">${engine[element].name}</li>`).appendTo(".object.sort ul");
+                    $(`<li value="${element}">
+                        <label>
+                            <input type="checkbox">
+                            ${engine[element].name}
+                        <label>
+                       </li>`).appendTo(".object.sort ul");
                 })
             }
+
 
             engineSort();
 
