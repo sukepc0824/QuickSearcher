@@ -1,9 +1,89 @@
 body {
+  position: relative;
   width: 100vw;
   height: 100vh;
   font-family: 'Inter', 'Noto Sans JP', sans-serif;
   display: flex;
   overflow: hidden;
+}
+
+.start-modal {
+  display: none;
+}
+
+.start-modal+.overlay {
+  display: none ;
+}
+
+.start-modal.active+.overlay {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(113, 113, 113, 0.3);
+  z-index: 1;
+}
+
+.start-modal.active {
+  display: block;
+  width: 600px;
+  height: 500px;
+  background-color: #fff;
+  border-radius: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  text-align: center;
+  padding: 54px;
+}
+
+.start-modal img.icon {
+  width: 64px;
+  height: 64px;
+}
+
+.start-modal h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 14px;
+  margin-bottom: 42px;
+}
+
+.start-modal .user-guide {
+  border-radius: 12px;
+  display: flex;
+  text-align: left;
+  padding: 10px;
+  margin: 10px;
+  align-items: center;
+}
+
+.start-modal .user-guide img {
+  height: 45px;
+}
+
+.start-modal .user-guide p {
+  margin-left: 14px;
+  font-size: 15px;
+  color: #111;
+  line-height: 1.2;
+}
+
+.start-modal button {
+  width: 300px;
+  height: 42px;
+  background-color: #0475e6;
+  color: #fff;
+  font-size: 16px;
+  border-radius: 10px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 40px;
 }
 
 .contents {
@@ -28,7 +108,7 @@ body {
 }
 
 .background-color.sunrise {
-  background: linear-gradient(#045da5, #dcbda0);
+  background: linear-gradient(#0371cb, #c3ae99);
 }
 
 .background-color.day {
@@ -39,26 +119,34 @@ body {
   background: linear-gradient(#0a3a7c, #9ebddb);
 }
 
-button.open-settings {
-  flex-shrink: 0;
-  width: 42px;
-  height: 32px;
+button.top-button,
+button.bottom-button {
   margin: 12px;
+  color: rgb(255, 255, 255, 0.7);
+  flex-shrink: 0;
+  padding: 0 9px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 5px;
 }
 
-button.open-settings:hover {
+button.bottom-button {
+  margin-top: auto;
+  margin-bottom: 12px;
+  margin-left: -52px;
+}
+
+button.top-button:hover {
   background-color: rgb(255, 255, 255, 0.24);
 }
 
-button.open-settings:active img {
+button.top-button:active img {
   opacity: 1;
 }
 
-.open-settings img {
+.top-button img {
   width: 24px;
   opacity: 0.7;
   pointer-events: none;
@@ -229,7 +317,8 @@ input[type='text'] {
   width: 98px;
   border-radius: 10px;
   border: 4px solid rgb(255, 255, 255, 0);
-  padding: 1px; /*がたつきをなくす*/
+  padding: 1px;
+  /*がたつきをなくす*/
   pointer-events: none;
   user-select: none;
 }
@@ -270,11 +359,19 @@ input[type='text'] {
   user-select: none;
 }
 
+.object ul li label {
+  cursor: move;
+}
+
 .object ul li::before {
   content: '';
   display: inline-block;
   width: 10px;
   height: 20px;
+}
+
+.object ul li label input {
+  display: none;
 }
 
 .object.disabled {
