@@ -138,9 +138,9 @@
 
             function goToSite(word) {
                 if (word.length == 0) {
-                    window.location.href = engine[selectingEngine].startPage
+                    window.top.location.href = engine[selectingEngine].startPage
                 } else {
-                    window.location.href = engine[selectingEngine].searchLink + word
+                    window.top.location.href = engine[selectingEngine].searchLink + word
                 }
             }
 
