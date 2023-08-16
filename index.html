@@ -427,6 +427,8 @@
                 engineSortOrder = ['google', 'youtube', 'wikipedia', 'twitter'];
                 otherEngine = ['amazon', 'yahoo', 'facebook', 'bing'];
                 engineSort('google')
+                localStorage.setItem("engineSort", JSON.stringify(engineSortOrder))
+                localStorage.setItem("otherEngine", JSON.stringify(otherEngine))
                 focusSuggest(engineSortOrder[0])
             })
 
