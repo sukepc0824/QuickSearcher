@@ -16,14 +16,14 @@
     <script src="js/jquery-ui.min.js"></script>
     <script src="js/engine-data.js"></script>
 </head>
-    <!-- Google tag (gtag.js) -->
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-QLGCDKDNV5"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
 
-  gtag('config', 'G-QLGCDKDNV5');
+    gtag('config', 'G-QLGCDKDNV5');
 </script>
 
 <body>
@@ -88,7 +88,9 @@
                 <div class="key" lang="jp">並び変え:</div>
                 <div class="key" lang="en">Sort order:</div>
                 <div class="value">
-                    <ul class="engine-sort"></ul>
+                    <ul class="engine-sort main"></ul>
+                    <div class="border"></div>
+                    <ul class="engine-sort other"></ul>
                     <button class="reset" lang="jp">並び順をリセット</button>
                     <button class="reset" lang="en">Reset sort order</button>
                 </div>
@@ -136,6 +138,12 @@
                 engineSortOrder = ['google', 'youtube', 'wikipedia', 'twitter'];
             }
 
+            if (localStorage.hasOwnProperty('otherEngine')) {
+                otherEngine = JSON.parse(localStorage.getItem("otherEngine"));
+            } else {
+                otherEngine = ['amazon', 'yahoo', 'facebook', 'bing'];
+            }
+
             function goToSite(word) {
                 if (word.length == 0) {
                     window.top.location.href = engine[selectingEngine].startPage
@@ -155,9 +163,10 @@
                         jsonpCallback: 'callback'
                     })
                         .done(function (data) {
+                            console.log(data);
                             $(".suggest button").remove();
                             data[1].forEach(function (element, i) {
-                                $(`<button tabindex="${i + 1}">${element}<button>`).appendTo(".suggest");
+                                $(`<button>${element}<button>`).appendTo(".suggest");
                                 $(".suggest button:empty").remove();
                             })
                             $(".suggest button").on("click", function () {
@@ -176,15 +185,15 @@
                         });
                 }
             }
-
+            // - $(`.engine button[value='${engineName}']`).index('.engine button') * 128 + 128
             function focusSuggest(engineName) {
                 $(".engine button").removeClass("focus");
                 $(`.engine button[value='${engineName}']`).addClass("focus");
                 selectingEngine = engineName;
                 $("#search-box").attr("placeholder", engine[engineName].name + ' Search...')
-                showSuggest(selectingEngine, $("#search-box").val())
+                showSuggest(selectingEngine, $("#search-box").val());
                 $(".engine").css({
-                    'marginTop': 184 - $(`.engine button[value='${engineName}']`).index('.engine button') * 124
+                    marginTop: $('.engine button').length * 64 / 2 - 64 + $('.engine button').length * 32 - $(`.engine button[value='${engineName}']`).index('.engine button') * 128
                 }, 200);
                 $(`.engine button`).on("contextmenu", function () {
                     window.top.location.href = engine[$(this).val()].startPage
@@ -204,19 +213,24 @@
                 $(".engine button").on("click", function () {
                     let engine = $(this).val()
                     focusSuggest(engine)
-                })
-
+                });
                 $(".object.sort ul li").remove();
                 engineSortOrder.forEach(function (element, i) {
                     $(`<li value="${element}">
                         <label>
-                            <input type="checkbox">
                             ${engine[element].name}
                         <label>
-                       </li>`).appendTo(".object.sort ul");
+                       </li>`).appendTo(".object.sort ul.main");
+                });
+
+                otherEngine.forEach(function (element, i) {
+                    $(`<li value="${element}">
+                        <label>
+                            ${engine[element].name}
+                        <label>
+                       </li>`).appendTo(".object.sort ul.other");
                 })
             }
-
 
             engineSort();
 
@@ -226,12 +240,12 @@
             });
 
             $("#search-box").keyup(e => {
-                if (e.code == 'ArrowDown' || e.code == 'ArrowUp') { } else {
+                console.log(e.code)
+                if (e.code == 'ArrowDown' || e.code == 'ArrowUp' || e.code == 'Tab' || e.key == 'Shift') { } else {
                     showSuggest(selectingEngine, $("#search-box").val());
                 }
             });
 
-            $("#search-box").focus();
 
             //ここの地獄ネストのコードどうにかならない？
             $(window).keydown(e => {
@@ -270,8 +284,46 @@
                         return false;
                     }
                 }
+                if (e.shiftKey) {
+                    if (e.code == "Tab") {
+                        if ($("#search-box").val().length == 0) {
+                            if (!$(".engine button.focus").prev().length) {
+                                return false;
+                            }
+                            focusSuggest($(".engine button.focus").prev().val())
+                        } else {
+                            if (!$(".suggest button.focus").prev().length) {
+                                return false;
+                            }
+                            $(".suggest button.focus").removeClass("focus").prev().addClass("focus");
+                            $("#search-box").val($(".suggest button.focus").text())
+                            return false;
+                        }
+                    }
+                    return false;
+                }
+                if (e.code == "Tab") {
+                    if ($("#search-box").val().length == 0) {
+                        if (!$(".engine button.focus").next().length) {
+                            return false;
+                        }
+                        focusSuggest($(".engine button.focus").next().val());
+                        return false;
+                    } else {
+                        if ($(".suggest button").hasClass("focus")) {
+                            if (!$(".suggest button.focus").next().length) {
+                                return false;
+                            }
+                            $(".suggest button.focus").removeClass("focus").next().addClass("focus");
+                            $("#search-box").val($(".suggest button.focus").text())
+                        } else {
+                            $(".suggest button:first-child").addClass("focus")
+                            $("#search-box").val($(".suggest button.focus").text())
+                        }
+                        return false;
+                    }
+                }
             })
-
             //設定項目
             $('button.open-settings').on("click", function () {
                 $('.settings').toggleClass('active')
@@ -342,20 +394,38 @@
                 localStorage.setItem("background", $(this).val());
             })
 
-            $(".engine-sort").sortable({
+            $("ul.main , ul.other").sortable({
                 revert: 220,
                 tolerance: 'pointer',
+                connectWith: '.engine-sort',
                 update: function () {
-                    engineSortOrder = $('.engine-sort').sortable("toArray", { attribute: 'value' });
+                    engineSortOrder = $('ul.main').sortable("toArray", { attribute: 'value' });
+                    otherEngine = $('ul.other').sortable("toArray", { attribute: 'value' });
                     engineSort()
                     localStorage.setItem("engineSort", JSON.stringify(engineSortOrder))
+                    localStorage.setItem("otherEngine", JSON.stringify(otherEngine))
                     focusSuggest(engineSortOrder[0])
+                },
+                change(e, ui) {
+                    if ($("ul.main").offset().top <= ui.offset.top
+                        && ui.offset.top <= $("ul.main").offset().top + $("ul.main").height()) {
+                        ui.helper.css("background", "#fff");
+                    } else {
+                        ui.helper.css("background", "##e3e3e3");
+                    }
+                    if ($("ul.other").offset().top <= ui.offset.top
+                        && ui.offset.top <= $("ul.other").offset().top + $("ul.other").height()) {
+                        ui.helper.css("background", "#e3e3e3");
+                    } else {
+                        ui.helper.css("background", "#fff");
+                    }
                 }
-            });
+            })
 
             $(".object.sort button.reset").on("click", function () {
                 localStorage.removeItem("engineSort");
                 engineSortOrder = ['google', 'youtube', 'wikipedia', 'twitter'];
+                otherEngine = ['amazon', 'yahoo', 'facebook', 'bing'];
                 engineSort('google')
                 focusSuggest(engineSortOrder[0])
             })
