@@ -12,7 +12,7 @@ body {
 }
 
 .start-modal+.overlay {
-  display: none ;
+  display: none;
 }
 
 .start-modal.active+.overlay {
@@ -172,7 +172,7 @@ input[type='text'] {
 }
 
 .engine {
-  margin-top: 184px;
+  margin-top: 0;
   transition: all 0.3s cubic-bezier(0.15, 0.82, 0.165, 1);
 }
 
@@ -214,7 +214,10 @@ input[type='text'] {
   transition: all 0.05s;
 }
 
-.suggest button:focus,
+.suggest button:focus {
+  outline: none;
+}
+
 .suggest button.focus {
   background-color: rgb(255, 255, 255, 0.2);
   outline: none;
@@ -226,9 +229,10 @@ input[type='text'] {
   flex-flow: column;
   width: 350px;
   height: 100%;
-  background-color: #f7f7f7;
+  background-color: #f9f9f9;
   flex-shrink: 0;
   left: 0;
+  overflow-y: auto;
   margin-left: -350px;
   transition: margin-left 0.20s cubic-bezier(0.215, 0.610, 0.355, 1);
 }
@@ -249,6 +253,7 @@ input[type='text'] {
   display: flex;
   align-items: center;
   border-bottom: #ccc 1px solid;
+  font-weight: 500;
 }
 
 .object {
@@ -276,7 +281,8 @@ input[type='text'] {
   font-size: 15px;
   border-radius: 6px;
   background-color: #fff;
-  border: 1px solid #aaa;
+  border: 1px solid #ccc;
+  box-shadow: 0px 0.5px 1px rgba(0, 0, 0, 0.2);
   position: relative;
 }
 
@@ -306,10 +312,10 @@ input[type='text'] {
 /*設定の背景の項目*/
 .object.background .value {
   display: flex;
+  gap: 14px;
 }
 
 .object.background .value label {
-  margin: 8px;
   border-radius: 8px;
 }
 
@@ -333,7 +339,7 @@ input[type='text'] {
 }
 
 .object.background .value p {
-  margin-top: 12px;
+  margin-top: 8px;
   font-size: 14px;
   text-align: center;
 }
@@ -343,20 +349,50 @@ input[type='text'] {
 }
 
 /*並び順指定*/
+.object ul {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+}
 
 .object ul li {
-  background-color: #ffffff;
   border: 1px solid #d4d4d4;
   font-size: 15px;
   border-radius: 6px;
   width: 200px;
   padding: 5px;
-  margin-bottom: 6px;
   cursor: default;
   display: flex;
   align-items: center;
   cursor: move;
   user-select: none;
+  transition: all 0.1s;
+}
+
+.object ul li.ui-sortable-helper {
+  box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.2);
+  transition: none;
+}
+
+ul.main {
+  min-height: 40px;
+  min-width: 100%;
+  padding-bottom: 16px;
+}
+
+ul.other {
+  min-height: 40px;
+  min-width: 100%;
+  padding-top: 16px;
+}
+
+ul.main li {
+  background-color: #ffffff;
+}
+
+ul.other li {
+  background-color: #e3e3e3;
+  border: 1px solid #c8c8c8;
 }
 
 .object ul li label {
