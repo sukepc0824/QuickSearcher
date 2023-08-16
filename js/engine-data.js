@@ -37,7 +37,7 @@ const engine = {
     yahoo: {
         name:"Yahoo!-JP",
         icon:'img/yahoo.svg',
-        suggestAPI:'https://ff.search.yahoo.com/gossip?output=fxjson&command=',
+        suggestAPI:'https://www.google.com/complete/search?client=firefox&q=',
         searchLink:'https://search.yahoo.co.jp/search?p=',
         startPage:'https://yahoo.co.jp'
     },
@@ -51,8 +51,8 @@ const engine = {
     bing: {
         name:"bing",
         icon:'img/bing.svg',
-        suggestAPI:undefined,
-        searchLink:'https://www.nicovideo.jp/search/',
-        startPage:'https://nicovideo.jp'
+        suggestAPI:'https://google.com/complete/search?client=firefox&q=',
+        searchLink:'https://bing.com/search?q=',
+        startPage:'https://bing.com'
     }
 }
