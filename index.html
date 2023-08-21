@@ -246,9 +246,7 @@
                 }
             });
 
-
-            //ここの地獄ネストのコードどうにかならない？
-            $(window).keydown(e => {
+            $(".contents").keydown(e => {
                 if (e.code == 'ArrowUp') {
                     if ($("#search-box").val().length == 0) {
                         if (!$(".engine button.focus").prev().length) {
@@ -284,8 +282,10 @@
                         return false;
                     }
                 }
-                if (e.shiftKey) {
-                    if (e.code == "Tab") {
+
+                if (e.code == "Tab") {
+                    if (e.shiftKey) {
+                        e.preventDefault();
                         if ($("#search-box").val().length == 0) {
                             if (!$(".engine button.focus").prev().length) {
                                 return false;
@@ -299,28 +299,26 @@
                             $("#search-box").val($(".suggest button.focus").text())
                             return false;
                         }
-                    }
-                    return false;
-                }
-                if (e.code == "Tab") {
-                    if ($("#search-box").val().length == 0) {
-                        if (!$(".engine button.focus").next().length) {
-                            return false;
-                        }
-                        focusSuggest($(".engine button.focus").next().val());
-                        return false;
                     } else {
-                        if ($(".suggest button").hasClass("focus")) {
-                            if (!$(".suggest button.focus").next().length) {
+                        if ($("#search-box").val().length == 0) {
+                            if (!$(".engine button.focus").next().length) {
                                 return false;
                             }
-                            $(".suggest button.focus").removeClass("focus").next().addClass("focus");
-                            $("#search-box").val($(".suggest button.focus").text())
+                            focusSuggest($(".engine button.focus").next().val());
+                            return false;
                         } else {
-                            $(".suggest button:first-child").addClass("focus")
-                            $("#search-box").val($(".suggest button.focus").text())
+                            if ($(".suggest button").hasClass("focus")) {
+                                if (!$(".suggest button.focus").next().length) {
+                                    return false;
+                                }
+                                $(".suggest button.focus").removeClass("focus").next().addClass("focus");
+                                $("#search-box").val($(".suggest button.focus").text())
+                            } else {
+                                $(".suggest button:first-child").addClass("focus")
+                                $("#search-box").val($(".suggest button.focus").text())
+                            }
+                            return false;
                         }
-                        return false;
                     }
                 }
             })
