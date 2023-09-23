@@ -1305,7 +1305,8 @@
                 })
 
                 $('button.remove').on("mouseout", function () {
-                    $(this).parents("li").removeClass("remove-text-jp","remove-text-en")
+                    $(this).parents("li").removeClass("remove-text-jp")
+                    $(this).parents("li").removeClass("remove-text-en")
                 })
             }
 
