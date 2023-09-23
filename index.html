@@ -7,14 +7,835 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/index.css">
     <link rel="stylesheet" href="css/jquery-ui.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+JP:wght@400;500&display=swap"
         rel="stylesheet">
     <script src="js/jquery.js"></script>
     <script src="js/jquery-ui.min.js"></script>
-    <script src="js/engine-data.js"></script>
+    <style>
+        body {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .start-modal {
+            display: none;
+        }
+
+        .overlay {
+            transition: all 0.2s;
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .start-modal.active+.overlay,
+        .engine-modal.active+.overlay,
+        .open-about.active+.overlay {
+            opacity: 1;
+            z-index: 1;
+            background-color: rgba(113, 113, 113, 0.3);
+        }
+
+        .start-modal.active {
+            display: block;
+            width: 600px;
+            height: 500px;
+            background-color: #fff;
+            border-radius: 10px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            text-align: center;
+            padding: 54px;
+        }
+
+        .start-modal img.icon {
+            width: 64px;
+            height: 64px;
+        }
+
+        .start-modal h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 14px;
+            margin-bottom: 42px;
+        }
+
+        .start-modal .user-guide {
+            border-radius: 12px;
+            display: flex;
+            text-align: left;
+            padding: 10px;
+            margin: 10px;
+            align-items: center;
+        }
+
+        .start-modal .user-guide img {
+            height: 45px;
+        }
+
+        .start-modal .user-guide p {
+            margin-left: 14px;
+            font-size: 15px;
+            color: #111;
+            line-height: 1.2;
+        }
+
+        .start-modal button {
+            width: 300px;
+            height: 42px;
+            background-color: #0475e6;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 10px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 40px;
+        }
+
+        .engine-modal {
+            flex-shrink: 0;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            display: none;
+            border: #a0a0a0 1px solid;
+            border-radius: 14px;
+            box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.25), 0px 36px 100px 0px rgba(0, 0, 0, 0.16);
+        }
+
+        .engine-modal.active {
+            display: block !important;
+            z-index: 1000;
+        }
+
+        .engine-modal .title-bar {
+            width: 100%;
+            height: 34px;
+            border-bottom: #bcbcbc 1px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .engine-modal .form {
+            gap: 16px;
+            padding: 24px;
+            flex-direction: column;
+            align-items: end;
+            display: flex;
+            flex-shrink: 0 !important;
+        }
+
+        .engine-modal input {
+            border: #c3c3c3 1px solid;
+            font-size: 16px;
+            height: 32px;
+            width: 500px;
+            margin-left: 10px;
+            border-radius: 6px;
+            padding: 8px;
+            padding-right: 34px;
+        }
+
+        .engine-modal.input-error input:not(.suggest-api) {
+            outline: rgb(255, 5, 5, 0.4) 4px solid;
+        }
+
+        .engine-modal.name-error-jp label.name::after {
+            content: 'この名前を使用することはできません';
+            position: absolute;
+            left: 100%;
+            margin-left: 16px;
+            font-size: 15px;
+            color: rgb(255, 5, 5);
+        }
+
+        .engine-modal.name-error-en label.name::after {
+            content: 'This name cannot be used.';
+            position: absolute;
+            left: 100%;
+            margin-left: 16px;
+            font-size: 15px;
+            color: rgb(255, 5, 5);
+        }
+
+        .engine-modal.name-error-en input.name,
+        .engine-modal.name-error-jp input.name {
+            outline: rgb(255, 5, 5, 0.4) 4px solid;
+        }
+
+        .engine-modal label.name {
+            margin-right: 300px;
+        }
+
+        .engine-modal input[type='text'].name {
+            width: 200px;
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        .engine-modal label img {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .engine-modal .info p {
+            position: relative;
+            word-wrap: normal;
+        }
+
+        .engine-modal label .info {
+            position: absolute;
+            left: 99%;
+            top: 0%;
+            width: 240px;
+            height: fit-content;
+            word-wrap: normal;
+            padding: 10px;
+            background-color: #eeeeee;
+            transition: all 0.1s;
+            opacity: 0;
+            visibility: hidden;
+            user-select: none;
+            border: #c3c3c3 1px solid;
+            box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            font-size: 15px;
+            line-height: 1.4;
+            z-index: 1000000;
+            overflow-wrap: normal;
+        }
+
+        .engine-modal label img:hover+.info {
+            display: block;
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .engine-modal label .info:hover {
+            display: block;
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .engine-modal label {
+            color: #222;
+            position: relative;
+            display: flex;
+            white-space: nowrap;
+            align-items: center;
+        }
+
+        .engine-modal input:focus {
+            outline: none;
+            outline: rgb(32, 143, 255, 0.4) 4px solid;
+        }
+
+
+        .engine-modal ::placeholder {
+            color: #b0b0b0;
+        }
+
+        .engine-modal .action {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .engine-modal .action button:active {
+            background-color: #f7f7f7;
+        }
+
+        .engine-modal .action button {
+            border-radius: 6px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0px 0.5px 1px rgba(0, 0, 0, 0.2);
+            height: 28px;
+            width: 110px;
+            font-size: 15px;
+            text-align: center;
+            cursor: default;
+        }
+
+        .engine-modal .action button.add-engine {
+            background-color: #0475e6;
+            color: #fff;
+        }
+
+        .engine-modal .action button.add-engine:active {
+            background-color: #0566c8;
+        }
+
+        .contents {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .background-color {
+            z-index: -1;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(#021748, #5b78db);
+        }
+
+        .background-color.twilight {
+            background: linear-gradient(#053d86, #b1bcd0);
+        }
+
+        .background-color.sunrise {
+            background: linear-gradient(#0371cb, #c3ae99);
+        }
+
+        .background-color.day {
+            background: linear-gradient(#0475e6, #b8c7d4);
+        }
+
+        .background-color.evening {
+            background: linear-gradient(#0a3a7c, #9ebddb);
+        }
+
+        button.top-button,
+        button.bottom-button {
+            margin: 12px;
+            color: rgb(255, 255, 255, 1);
+            flex-shrink: 0;
+            padding: 0 9px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            gap: 5px;
+            cursor: default;
+        }
+
+        button.open-about {
+            margin-left: -84px;
+        }
+
+        button.top-button:hover {
+            background-color: rgb(255, 255, 255, 0.24);
+        }
+
+        button.top-button:active img,
+        button.top-button:active p {
+            opacity: 1;
+        }
+
+        .top-button img {
+            width: 24px;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .top-button p {
+            opacity: 0.7;
+        }
+
+        .contents input[type='text'] {
+            font-size: 34px;
+            color: rgb(255, 255, 255);
+            outline: none;
+            width: 580px;
+            line-height: 0;
+        }
+
+        .partition {
+            width: 2px;
+            height: 60px;
+            background-color: rgb(255, 255, 255, 0.4);
+            margin-right: 24px;
+        }
+
+        .contents ::placeholder {
+            color: rgb(255, 255, 255, 0.6);
+        }
+
+        .engine {
+            margin-top: 0;
+            transition: all 0.3s cubic-bezier(0.15, 0.82, 0.165, 1);
+        }
+
+        .engine button {
+            display: block;
+            height: 34px;
+            margin: 0px 10px 0px auto;
+            padding: 15px;
+            box-sizing: content-box;
+            cursor: default;
+            opacity: 0.4;
+            font-size: 30px;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .engine button img {
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .engine button.focus {
+            opacity: 1;
+        }
+
+        .engine input:checked+img {
+            opacity: 1;
+        }
+
+        .suggest {
+            width: 380px;
+        }
+
+        .suggest button {
+            display: block;
+            width: 100%;
+            color: #fff;
+            font-size: 22px;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: default;
+            transition: all 0.05s;
+        }
+
+        .suggest button:focus {
+            outline: none;
+        }
+
+        .suggest button.focus {
+            background-color: rgb(255, 255, 255, 0.2);
+            outline: none;
+        }
+
+        /*settings*/
+        .settings {
+            display: flex;
+            flex-flow: column;
+            width: 360px;
+            height: 100%;
+            background-color: #f9f9f9;
+            flex-shrink: 0;
+            left: 0;
+            overflow-y: auto;
+            margin-left: -360px;
+            transition: margin-left 0.20s cubic-bezier(0.215, 0.610, 0.355, 1);
+        }
+
+        .settings-contents {
+            flex: 1;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .settings.active {
+            margin-left: 0;
+        }
+
+        .topber {
+            height: 50px;
+            padding-left: 20px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: #ccc 1px solid;
+            font-weight: 500;
+        }
+
+        .object {
+            display: flex;
+        }
+
+        .object .key {
+            width: 84px;
+            text-align: right;
+            font-size: 14px;
+            margin: 6px 5px 0px 0px;
+        }
+
+        .border {
+            width: 100%;
+            height: 1px;
+            background-color: #ccc;
+        }
+
+        .object label.selectbox {
+            display: block;
+            height: 30px;
+            width: 100px;
+            font-size: 15px;
+            border-radius: 6px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0px 0.5px 1px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .object select {
+            width: 100%;
+            height: 100%;
+            padding: 5px;
+            outline: none;
+        }
+
+        .object .value label.selectbox::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 2px;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-image: url('./img/settings/select.svg');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 10px;
+            pointer-events: none;
+        }
+
+        /*設定の背景の項目*/
+        .object.background .value {
+            display: flex;
+            gap: 14px;
+        }
+
+        .object.background .value label {
+            border-radius: 8px;
+        }
+
+        .object.background .value label img {
+            width: 98px;
+            border-radius: 10px;
+            border: 4px solid rgb(255, 255, 255, 0);
+            padding: 1px;
+            /*がたつきをなくす*/
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .object.background .value input:checked+img {
+            border: 4px solid #0683ff;
+            padding: 1px;
+        }
+
+        .object.background .value input {
+            display: none;
+        }
+
+        .object.background .value p {
+            margin-top: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .object.color input {
+            height: 30px;
+        }
+
+        /*並び順指定*/
+        ul {
+            display: flex;
+            flex-direction: column;
+            width: 210px;
+        }
+
+        li {
+            border: 1px solid #d4d4d4;
+            font-size: 15px;
+            border-radius: 6px;
+            padding: 5px;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            user-select: none;
+            position: relative;
+            left: 0;
+            top: 0;
+            filter: blur(0px);
+            transition: filter 0.4s ease;
+            background: #fff;
+            padding-right: 28px;
+        }
+
+        li.remove-text-jp ::after {
+            content: ' - 削除';
+        }
+
+        li.remove-text-en ::after {
+            content: ' - Remove';
+        }
+
+        li.hide {
+            filter: blur(30px) !important;
+        }
+
+        li button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 12px;
+            width: 16px;
+            display: none;
+        }
+
+        li button img {
+            width: 100%;
+        }
+
+        li:hover button {
+            display: block;
+        }
+
+        li.ui-sortable-helper {
+            box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.2);
+            cursor: move;
+        }
+
+        ul li.ui-sortable-helper button {
+            display: none;
+        }
+
+        ul.main,ul.other {
+            min-height: 40px;
+            min-width: 100%;
+        }
+
+
+        ul.main li {
+            background-color: #ffffff;
+        }
+
+        ul.other li {
+            background-color: #e3e3e3;
+            border: 1px solid #c8c8c8;
+        }
+
+        li::before {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+        }
+
+        li label {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            font-size: 15px;
+        }
+
+        .object.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .object.sort .value {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .object.sort .action {
+            display: flex;
+            gap: 5px;
+            margin-top: -5px;
+        }
+
+        .object.sort .action button {
+            cursor: default;
+            min-width: 88px;
+            padding: 0 8px;
+            height: 28px;
+            font-size: 15px;
+            border: 1px solid #aaa;
+            background-color: #fff;
+            text-align: center;
+            border-radius: 6px;
+        }
+
+        .object .action button:active {
+            background-color: #f7f7f7;
+        }
+
+        .object.sort .action button {
+            margin-top: 6px;
+            width: 50%;
+        }
+
+        footer {
+            position: sticky;
+            width: 100%;
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            bottom: 12px;
+        }
+
+        footer .link {
+            display: flex;
+        }
+
+        footer small,
+        footer a {
+            font-size: 14px;
+            font-weight: 500;
+            color: #888;
+            line-height: 1.3;
+            margin: 0px 4px;
+            cursor: pointer;
+        }
+
+        .open-about {
+            z-index: 100;
+            position: fixed;
+            right: 0px;
+            top: 0px;
+            transition: width 0.2s;
+            width: 220px;
+            white-space: nowrap;
+            filter: blur(0px);
+        }
+
+        .open-about.active p {
+            overflow: hidden;
+            display: none;
+        }
+
+        .open-about.active {
+            width: 40px;
+        }
+
+        .open-about.active:hover {
+            background-color: #e4e4e4;
+        }
+
+        .open-about img {
+            display: none;
+        }
+
+        .open-about.active img {
+            display: block;
+        }
+
+        .about {
+            position: fixed;
+            z-index: 1;
+            right: -620px;
+            display: flex;
+            flex-flow: column;
+            width: 620px;
+            height: 100%;
+            background-color: #f9f9f9;
+            overflow-y: auto;
+            transition: right 0.20s cubic-bezier(0.215, 0.610, 0.355, 1);
+        }
+
+        .about.active {
+            right: 0px;
+        }
+
+        #top {
+            padding: 28px;
+            text-align: center;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        #top img.screenshot {
+            width: 100%;
+            margin-top: 30px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        #top img.icon {
+            width: 90px;
+            margin: auto;
+        }
+
+        #top p {
+            font-size: 17px;
+            line-height: 1.3;
+            opacity: 0.9;
+            text-align: center;
+            padding: 0 40px;
+        }
+
+        #top p.caption {
+            font-size: 14px;
+            position: absolute;
+            bottom: 12px;
+            text-align: center;
+            left: 50%;
+            width: 88%;
+            transform: translateX(-50%);
+        }
+
+        #top .centering {
+            margin: auto;
+        }
+
+        #top a {
+            background: #0475e6;
+            padding: 10px;
+            color: #f8f8f8;
+            height: 42px;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+        }
+
+        .v-stack {
+            display: flex;
+            align-items: center;
+        }
+
+        .h-stack {
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 {
+            font-size: 36px;
+            font-weight: 500;
+            text-align: center;
+        }
+    </style>
 </head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-QLGCDKDNV5"></script>
@@ -26,7 +847,7 @@
     gtag('config', 'G-QLGCDKDNV5');
 </script>
 
-<body>
+<body class="jp">
     <div class="start-modal">
         <img src="img/quicksearcher_icon.png" class="icon">
         <h1>QuickSearcherへようこそ</h1>
@@ -39,6 +860,44 @@
             <p>検索エンジンのアイコンを左クリックで選択，右クリックでそのサイトのトップページに直接飛ぶことができます。</p>
         </div>
         <button>始めましょう</button>
+    </div>
+    <div class="overlay"></div>
+    <div class="engine-modal">
+        <div class="form">
+            <label class="name">
+                <span lang="jp">名前:</span>
+                <span lang="en">Name:</span>
+                <input type="text" placeholder="Google" class="name" autocomplete="off"></label>
+            <label>URL:<input type="url" placeholder="https://google.com" class="start-page"></label>
+            <label>
+                <span lang="jp">検索URL:</span>
+                <span lang="en">Search URL:</span><input type="url" placeholder="https://google.com/search?q="
+                    class="search-link"><img src="img/settings/info.svg">
+                <div class="info">
+                    <p lang="jp">URLの末に検索キーワードが続く形で入力してください。<br>
+                        また，検索キーワードは空で入力してください。</p>
+                    <p lang="en">Enter the URL followed by the search keywords. Please enter a blank search keyword.</p>
+                </div>
+            </label>
+            <label>
+                <span lang="jp">API (任意):</span>
+                <span lang="en">API (Optional):</span><input type="url"
+                    placeholder="https://google.com/complete/search?client=firefox&q=" class="suggest-api"><img
+                    src="img/settings/info.svg">
+                <div class="info">
+                    <p lang="jp">
+                        これは開発者向けの機能です。検索エンジンのjsonP形式のサジェストAPIを取得できる場合は入力してください。json方式で取得する場合は，ブラウザのCROSを無効にしてください。</p>
+                    <p lang="en">This is a feature for developers. Please input the search engine's jsonP format
+                        suggestion API. if you want to get it in json format, please disable CROS in your browser.</p>
+                </div>
+            </label>
+            <div class="action">
+                <button class="cancel" lang="jp">キャンセル</button>
+                <button class="cancel" lang="en">Cancel</button>
+                <button class="add-engine" lang="jp">追加</button>
+                <button class="add-engine" lang="en">Add</button>
+            </div>
+        </div>
     </div>
     <div class="overlay"></div>
 
@@ -91,15 +950,19 @@
                     <ul class="engine-sort main"></ul>
                     <div class="border"></div>
                     <ul class="engine-sort other"></ul>
-                    <button class="reset" lang="jp">並び順をリセット</button>
-                    <button class="reset" lang="en">Reset sort order</button>
+                    <div class="action">
+                        <button class="add" lang="jp">追加...</button>
+                        <button class="add" lang="en">Add...</button>
+                        <button class="reset" lang="jp">リセット</button>
+                        <button class="reset" lang="en">Reset</button>
+                    </div>
                 </div>
             </div>
         </div>
         <footer>
             <div class="link">
-                <a href="#">>Github</a>
-                <a href="https://twitter.com/pcsuke">>Developer Twitter</a>
+                <a onclick="window.top.location.href ='https://github.com/sukepc0824/QuickSearcher'">>Github</a>
+                <a onclick="window.top.location.href ='https://twitter.com/pcsuke'">>Developer Twitter</a>
             </div>
             <small>
                 &copy; 2023- スケ/SUKE. All Rights Reserved.
@@ -114,9 +977,37 @@
         <div class="engine"></div>
         <div class="partition"></div>
         <form>
-            <input type="text" name="search" id="search-box" autocomplete="off">
+            <input type="text" name="search" id="search-box" autocomplete="off" autocorrect="off">
         </form>
         <div class="suggest"></div>
+    </div>
+    <button class="open-about top-button" style="display: none;">
+        <img src="./img/settings/close.svg">
+        <p lang="jp">Chrome 拡張機能が登場！</p>
+        <p lang="en">Chrome Extension is here!</p>
+    </button>
+    <div class="overlay"></div>
+    <div class="about">
+
+        <div id="top">
+            <img src="./lp/icon.png" class="icon">
+            <h2>QuickSearcher</h2>
+            <p lang="jp">QuickSearcherがChrome拡張機能になりました。<sup>※1</sup><br>
+                新しいタブごとにQuickSearcherを表示することができます。<br>
+                いくつかの不具合を修正し，Web版よりも2倍以上レスポンスが早くなります。</p>
+            <p lang="en">QuickSearcher is now a Chrome extension.<sup>※1</sup><br>
+                QuickSearcher can be displayed in each new tab.
+                Some bugs have been fixed, and the response time is more than twice faster than the web
+                version.</p>
+            <a href="#" lang="jp">Chrome 拡張機能をダウンロード</a>
+            <a href="#" lang="en">Download Chrome Extension</a>
+            <img src="./lp/screenshot.png" class="screenshot">
+
+            <p class="caption" lang="jp">※1:Chromeウェブストアで公開中ですが，Firefox,Edge,Brave,Operaなどでもお使いいただけます。</p>
+            <p class="caption" lang="en">※1: This is a Chrome extension, but it can be used with Firefox, Edge, Brave,
+                Opera, etc.</p>
+        </div>
+
     </div>
     <script>
         $(function () {
@@ -126,10 +1017,97 @@
                 localStorage.setItem(keyName, true);
 
             }
+            selectingEngine = 'google';
 
             $('.start-modal button').on("click", function () {
                 $(this).parents(".start-modal").removeClass("active")
             })
+
+            if (localStorage.hasOwnProperty('engine-data')) {
+                engine = JSON.parse(localStorage.getItem("engine-data"));
+            } else {
+                engine = {
+                    google: {
+                        name: "Google",
+                        icon: 'img/google.svg',
+                        suggestAPI: 'https://www.google.com/complete/search?client=firefox&q=',
+                        searchLink: 'https://www.google.com/search?q=',
+                        startPage: 'https://www.google.com',
+                        remove: false
+                    },
+                    youtube: {
+                        name: "Youtube",
+                        icon: 'img/youtube.svg',
+                        suggestAPI: 'https://clients1.google.com/complete/search?hl=en&ds=yt&client=firefox&q=',
+                        searchLink: 'https://www.youtube.com/results?search_query=',
+                        startPage: 'https://www.youtube.com',
+                        remove: false
+                    },
+                    wikipedia: {
+                        name: "Wikipedia",
+                        icon: 'img/wikipedia.svg',
+                        suggestAPI: 'https://ja.wikipedia.org/w/api.php?action=opensearch&format=json&search=',
+                        searchLink: 'https://ja.wikipedia.org/w/index.php?search=',
+                        startPage: 'https://ja.wikipedia.org',
+                        remove: false
+                    },
+                    twitter: {
+                        name: "Twitter",
+                        icon: 'img/twitter.svg',
+                        suggestAPI: undefined,
+                        searchLink: 'https://twitter.com/search?q=',
+                        startPage: 'https://twitter.com/home',
+                        remove: false
+                    },
+                    amazon: {
+                        name: "Amazon",
+                        icon: 'img/amazon.svg',
+                        suggestAPI: undefined,
+                        remove: false,
+                        jp: {
+                            searchLink: 'https://www.amazon.co.jp/s?k=',
+                            startPage: 'https://amazon.co.jp'
+                        },
+                        en: {
+                            searchLink: 'https://www.amazon.com/s?k=',
+                            startPage: 'https://amazon.com'
+                        }
+                    },
+                    yahoo: {
+                        name: "Yahoo!",
+                        remove: false,
+                        jp: {
+                            icon: 'img/yahoo.svg',
+                            suggestAPI: 'https://www.google.com/complete/search?client=firefox&q=',
+                            searchLink: 'https://search.yahoo.co.jp/search?p=',
+                            startPage: 'https://yahoo.co.jp'
+                        },
+                        en: {
+                            icon: 'img/yahoo-en.svg',
+                            suggestAPI: 'https://ff.search.yahoo.com/gossip?output=fxjsonp&command=',
+                            searchLink: 'https://search.yahoo.com/search?p=',
+                            startPage: 'https://yahoo.com'
+                        }
+                    },
+                    facebook: {
+                        name: "Facebook",
+                        icon: 'img/facebook.svg',
+                        suggestAPI: undefined,
+                        searchLink: 'https://facebook.com/search/?q=',
+                        startPage: 'https://facebook.com',
+                        remove: false
+                    },
+                    bing: {
+                        name: "Bing",
+                        icon: 'img/bing.svg',
+                        suggestAPI: 'https://www.google.com/complete/search?client=firefox&q=',
+                        searchLink: 'https://bing.com/search?q=',
+                        startPage: 'https://bing.com',
+                        remove: false
+                    }
+                }
+
+            }
 
 
             if (localStorage.hasOwnProperty('engineSort')) {
@@ -146,56 +1124,88 @@
 
             function goToSite(word) {
                 if (word.length == 0) {
-                    window.top.location.href = engine[selectingEngine].startPage
+                    window.top.location.href = engine[selectingEngine].startPage;
+                    if (selectingEngine == "yahoo" || selectingEngine == "amazon") {
+                        if ($("body").hasClass("jp")) {
+                            window.top.location.href = engine[selectingEngine].jp.startPage;
+                        } else {
+                            window.top.location.href = engine[selectingEngine].en.startPage;
+                        }
+                    }
                 } else {
+                    if (selectingEngine == "yahoo" || selectingEngine == "amazon") {
+                        if ($("body").hasClass("jp")) {
+                            window.top.location.href = engine[selectingEngine].jp.searchLink + word
+                        } else {
+                            window.top.location.href = engine[selectingEngine].en.searchLink + word
+                        }
+                        return false;
+                    }
                     window.top.location.href = engine[selectingEngine].searchLink + word
                 }
             }
 
             function showSuggest(engineName, word) {
-                if (engine[selectingEngine].suggestAPI == undefined) {
-                    $(".suggest button").remove();
+                if (engineName == "yahoo") {
+                    if ($("body").hasClass("jp")) {
+                        ajaxJsonp(engine[engineName].jp.suggestAPI, word);
+                    } else {
+                        ajaxJsonp(engine[engineName].en.suggestAPI, word);
+                    }
+                    return false;
                 } else {
-                    $.ajax({
-                        url: engine[engineName].suggestAPI + word,
-                        type: 'GET',
-                        dataType: 'jsonp',
-                        jsonpCallback: 'callback'
-                    })
-                        .done(function (data) {
-                            console.log(data);
-                            $(".suggest button").remove();
-                            data[1].forEach(function (element, i) {
-                                $(`<button>${element}<button>`).appendTo(".suggest");
-                                $(".suggest button:empty").remove();
-                            })
-                            $(".suggest button").on("click", function () {
-                                goToSite($(this).text())
-                            })
-
-                            $(".suggest button").on("mouseover", function () {
-                                $(".suggest button").removeClass("focus");
-                                $(this).addClass("focus");
-                            })
-
-                            $(".suggest button").on("mouseout", function () {
-                                $(".suggest button").removeClass("focus");
-                            })
-
-                        });
+                    ajaxJsonp(engine[engineName].suggestAPI, word);
                 }
             }
+
+            function ajaxJsonp(api, word) {
+                $.ajax({
+                    url: api + word,
+                    type: 'GET',
+                    dataType: 'jsonp',
+                    jsonpCallback: 'callback'
+                })
+                    .done(function (data) {
+                        $(".suggest button").remove();
+                        data[1].forEach(function (element, i) {
+                            $(`<button>${element}<button>`).appendTo(".suggest");
+                            $(".suggest button:empty").remove();
+                        })
+                        $(".suggest button").on("click", function () {
+                            goToSite($(this).text())
+                        })
+
+                        $(".suggest button").on("mouseover", function () {
+                            $(".suggest button").removeClass("focus");
+                            $(this).addClass("focus");
+                        })
+
+                        $(".suggest button").on("mouseout", function () {
+                            $(".suggest button").removeClass("focus");
+                        })
+
+                    });
+            }
+
             // - $(`.engine button[value='${engineName}']`).index('.engine button') * 128 + 128
             function focusSuggest(engineName) {
                 $(".engine button").removeClass("focus");
                 $(`.engine button[value='${engineName}']`).addClass("focus");
                 selectingEngine = engineName;
-                $("#search-box").attr("placeholder", engine[engineName].name + ' Search...')
+                $("#search-box").attr("placeholder", engine[engineName].name + ' Search...');
                 showSuggest(selectingEngine, $("#search-box").val());
                 $(".engine").css({
                     marginTop: $('.engine button').length * 64 / 2 - 64 + $('.engine button').length * 32 - $(`.engine button[value='${engineName}']`).index('.engine button') * 128
                 }, 200);
                 $(`.engine button`).on("contextmenu", function () {
+                    if (selectingEngine == "yahoo" || selectingEngine == "amazon") {
+                        if ($("body").hasClass("jp")) {
+                            window.top.location.href = engine[$(this).val()].jp.startPage
+                        } else {
+                            window.top.location.href = engine[$(this).val()].en.startPage
+                        }
+                        return false;
+                    }
                     window.top.location.href = engine[$(this).val()].startPage
                     return false;
                 })
@@ -204,31 +1214,91 @@
 
             function engineSort() {
                 $(".engine button").remove();
+
                 engineSortOrder.forEach(function (element, i) {
+                    if (element == "yahoo") {
+                        if ($("body").hasClass("jp")) {
+                            $(`<button value="${element}">
+                                <img src="${engine[element].jp.icon}">
+                                </button>`).appendTo(".engine");
+                        } else {
+                            $(`<button value="${element}">
+                                <img src="${engine[element].en.icon}">
+                                </button>`).appendTo(".engine");
+                        }
+                        return false;
+                    }
+                    if (engine[element].icon === undefined) {
+                        $(`<button value="${element}">
+                                ${engine[element].name}
+                                </button>`).appendTo(".engine");
+                        return false;
+                    }
                     $(`<button value="${element}">
                       <img src="${engine[element].icon}">
                    </button>`).appendTo(".engine");
                     $(".engine button:first-child").addClass("focus") //最初の要素だけフォーカス
+                    focusSuggest(selectingEngine)
                 })
+
                 $(".engine button").on("click", function () {
-                    let engine = $(this).val()
-                    focusSuggest(engine)
+                    let engineName = $(this).val()
+                    focusSuggest(engineName)
+                    if (engine[engineName].suggestAPI == undefined || $("#search-box").val().length == 0) {
+                        $(".suggest button").remove();
+                    }
                 });
                 $(".object.sort ul li").remove();
+
                 engineSortOrder.forEach(function (element, i) {
+                    if (engine[element].remove == true) {
+                        $(`<li value="${element}">
+                        <label>
+                            ${engine[element].name}
+                            <button class="remove"><img src="img/settings/remove.svg"></button>
+                        </label>
+                       </li>`).appendTo(".object.sort ul.main");
+                        return false;
+                    }
                     $(`<li value="${element}">
                         <label>
                             ${engine[element].name}
-                        <label>
+                        </label>
                        </li>`).appendTo(".object.sort ul.main");
+
                 });
 
                 otherEngine.forEach(function (element, i) {
+                    if (engine[element].remove == true) {
+                        $(`<li value="${element}">
+                        <label>
+                            ${engine[element].name}
+                            <button class="remove"><img src="img/settings/remove.svg"></button>
+                        </label>
+                       </li>`).appendTo(".object.sort ul.other");
+                        return false;
+                    }
                     $(`<li value="${element}">
                         <label>
                             ${engine[element].name}
-                        <label>
+                        </label>
                        </li>`).appendTo(".object.sort ul.other");
+                })
+
+                $(".settings .sort button.remove").on("click", function () {
+                    let targetEngine = $(this).parents("li").attr("value");
+                    delete engine[targetEngine];
+                    if (engineSortOrder.includes(targetEngine)) {
+                        engineSortOrder.splice(engineSortOrder.indexOf(targetEngine), 1);
+                    } else {
+                        otherEngine.splice(otherEngine.indexOf(targetEngine), 1);
+                    }
+                    localStorage.setItem("engineSort", JSON.stringify(engineSortOrder))
+                    localStorage.setItem("otherEngine", JSON.stringify(otherEngine))
+                    localStorage.setItem("engine-data", JSON.stringify(engine))
+                    $(this).parents("li").hide();
+                    focusSuggest(engineSortOrder[0])
+                    engineSort();
                 })
             }
 
@@ -240,12 +1310,13 @@
             });
 
             $("#search-box").keyup(e => {
-                console.log(e.code)
                 if (e.code == 'ArrowDown' || e.code == 'ArrowUp' || e.code == 'Tab' || e.key == 'Shift') { } else {
                     showSuggest(selectingEngine, $("#search-box").val());
                 }
             });
 
+
+            //ここの地獄ネストのコードどうにかならない？
             $(".contents").keydown(e => {
                 if (e.code == 'ArrowUp') {
                     if ($("#search-box").val().length == 0) {
@@ -324,7 +1395,11 @@
             })
             //設定項目
             $('button.open-settings').on("click", function () {
-                $('.settings').toggleClass('active')
+                $('.settings').toggleClass('active');
+            })
+
+            $('button.open-about').on("click", function () {
+                $('.about,button.open-about').toggleClass('active');
             })
 
             //言語設定
@@ -332,13 +1407,19 @@
                 if (lang === 'jp') {
                     $('[lang="en"]').hide();
                     $('[lang="jp"]').show();
+                    $('body').addClass("jp");
+                    $('body').removeClass("en");
                     localStorage.setItem("lang", 'jp');
                 }
                 if (lang === 'en') {
                     $('[lang="jp"]').hide();
                     $('[lang="en"]').show();
+                    $('body').addClass("en");
+                    $('body').removeClass("jp");
                     localStorage.setItem("lang", 'en');
                 }
+                engineSort()
+                focusSuggest(selectingEngine)
             }
 
             if (localStorage.hasOwnProperty('lang')) {
@@ -392,42 +1473,172 @@
                 localStorage.setItem("background", $(this).val());
             })
 
-            $("ul.main , ul.other").sortable({
+            $("ul.main,ul.other").sortable({
                 revert: 220,
                 tolerance: 'pointer',
-                connectWith: '.engine-sort',
+                connectWith: '.engine-sort.main , .engine-sort.other',
                 update: function () {
                     engineSortOrder = $('ul.main').sortable("toArray", { attribute: 'value' });
                     otherEngine = $('ul.other').sortable("toArray", { attribute: 'value' });
-                    engineSort()
-                    localStorage.setItem("engineSort", JSON.stringify(engineSortOrder))
-                    localStorage.setItem("otherEngine", JSON.stringify(otherEngine))
-                    focusSuggest(engineSortOrder[0])
+                    engineSort();
+                    localStorage.setItem("engineSort", JSON.stringify(engineSortOrder));
+                    localStorage.setItem("otherEngine", JSON.stringify(otherEngine));
+                    if (engineSortOrder.includes(selectingEngine)) {
+                        focusSuggest(selectingEngine);
+                    } else {
+                        focusSuggest(engineSortOrder[0]);
+                    }
+                },
+                create(e, ui) {
+                    if (engineSortOrder.length === 1) {
+                        $("ul.main").sortable("option", "connectWith", ".engine-sort.main");
+                    } else {
+                        $("ul.main").sortable("option", "connectWith", ".engine-sort.main , .engine-sort.other");
+                    }
                 },
                 change(e, ui) {
                     if ($("ul.main").offset().top <= ui.offset.top
                         && ui.offset.top <= $("ul.main").offset().top + $("ul.main").height()) {
                         ui.helper.css("background", "#fff");
                     } else {
-                        ui.helper.css("background", "##e3e3e3");
+                        ui.helper.css("background", "#e3e3e3");
                     }
+
                     if ($("ul.other").offset().top <= ui.offset.top
                         && ui.offset.top <= $("ul.other").offset().top + $("ul.other").height()) {
                         ui.helper.css("background", "#e3e3e3");
                     } else {
                         ui.helper.css("background", "#fff");
                     }
+                },
+                sort(e, ui) {
+                    if (350 <= ui.offset.left) {
+                        ui.item.css("opacity", "0.4");
+                        let targetEngine = ui.item.attr("value");
+                        if (engine[targetEngine].remove == true) {
+                            if ($('body').hasClass("jp")) {
+                                ui.item.addClass("remove-text-jp");
+                            } else {
+                                ui.item.addClass("remove-text-en");
+                            }
+                            $("ul.main , ul.other").sortable("option", "revert", 0);
+                        }
+                    } else {
+                        ui.item.css("opacity", "1");
+                        ui.item.removeClass("remove-text-jp remove-text-en");
+                        $("ul.main , ul.other").sortable("option", "revert", 220);
+                    }
+                },
+                stop(e, ui) {
+                    if (350 <= ui.offset.left) {
+                        ui.item.css("opacity", "1");
+                        ui.item.removeClass("remove-text-jp remove-text-en");
+                        let targetEngine = ui.item.attr("value");
+                        if (engine[targetEngine].remove == true) {
+                            let top = ui.offset.top;
+                            let left = ui.offset.left;
+                            $(`li[value=${targetEngine}]`).appendTo(".contents")
+                                .css({ position: "absolute", top: top, left: left, filter: "blur(0px)" })
+                                .addClass("hide", 200)
+                                .fadeOut(320)
+
+                            delete engine[targetEngine];
+                            if (engineSortOrder.includes(targetEngine)) {
+                                engineSortOrder.splice(engineSortOrder.indexOf(targetEngine), 1);
+                            } else {
+                                otherEngine.splice(otherEngine.indexOf(targetEngine), 1);
+                            }
+                            localStorage.setItem("engineSort", JSON.stringify(engineSortOrder))
+                            localStorage.setItem("otherEngine", JSON.stringify(otherEngine))
+                            localStorage.setItem("engine-data", JSON.stringify(engine))
+                            focusSuggest(engineSortOrder[0])
+                            engineSort();
+                        }
+                    } else {
+                        ui.item.removeClass("remove-text-jp remove-text-en");
+                        ui.item.css("opacity", "1");
+                    }
+                    if (engineSortOrder.length === 1) {
+                        $("ul.main").sortable("option", "connectWith", ".engine-sort.main");
+                    } else {
+                        $("ul.main").sortable("option", "connectWith", ".engine-sort.main , .engine-sort.other");
+                    }
                 }
+            });
+
+            $(".object.sort button.add").on("click", function () {
+                $(".engine-modal").addClass("active");
+                $(".engine-modal").removeClass("input-error name-error-jp name-error-en");
+                $(".engine-modal input.name").val("")
+                $(".engine-modal input.start-page").val("")
+                $(".engine-modal input.search-link").val("")
+                $(".engine-modal input.suggest-api").val("")
+            })
+
+            $(".engine-modal .cancel").on("click", function () {
+                $(".engine-modal").removeClass("active");
+            })
+
+            $(".engine-modal button.add-engine").on("click", function () {
+                if ($(".engine-modal input.name").val().length == 0 ||
+                    $(".engine-modal input.start-page").val().length == 0 ||
+                    $(".engine-modal input.search-link").val().length == 0
+                ) {
+                    $(".engine-modal").addClass("input-error")
+                    return false;
+                } else {
+                    $(".engine-modal").removeClass("input-error")
+                }
+                if (engineSortOrder.includes($(".engine-modal input.name").val())
+                    || otherEngine.includes($(".engine-modal input.name").val())) {
+                    if ($('body').hasClass("jp")) {
+                        $(".engine-modal").addClass("name-error-jp")
+                    } else {
+                        $(".engine-modal").addClass("name-error-en")
+                    }
+                    return false;
+                } else {
+                    $(".engine-modal").removeClass("name-error-jp name-error-en");
+                }
+                if ($(".engine-modal input.suggest-api").val().length) {
+                    engine[$(".engine-modal input.name").val()] = {
+                        name: $(".engine-modal input.name").val(),
+                        startPage: $(".engine-modal input.start-page").val(),
+                        searchLink: $(".engine-modal input.search-link").val(),
+                        suggestAPI: $(".engine-modal input.suggest-api").val(),
+                        icon: undefined,
+                        remove: true
+                    }
+                } else {
+                    engine[$(".engine-modal input.name").val()] = {
+                        name: $(".engine-modal input.name").val(),
+                        startPage: $(".engine-modal input.start-page").val(),
+                        searchLink: $(".engine-modal input.search-link").val(),
+                        suggestAPI: undefined,
+                        icon: undefined,
+                        remove: true
+                    }
+                }
+                localStorage.setItem("engine-data", JSON.stringify(engine));
+                otherEngine.push($(".engine-modal input.name").val());
+                localStorage.setItem("otherEngine", JSON.stringify(otherEngine));
+                $(".engine-modal").removeClass("active");
+                engineSort()
             })
 
             $(".object.sort button.reset").on("click", function () {
                 localStorage.removeItem("engineSort");
                 engineSortOrder = ['google', 'youtube', 'wikipedia', 'twitter'];
                 otherEngine = ['amazon', 'yahoo', 'facebook', 'bing'];
-                engineSort('google')
+                $.each(engine, function (index, value) {
+                    if (engine[index].remove == true) {
+                        otherEngine.push(index)
+                    }
+                })
+                engineSort();
                 localStorage.setItem("engineSort", JSON.stringify(engineSortOrder))
                 localStorage.setItem("otherEngine", JSON.stringify(otherEngine))
-                focusSuggest(engineSortOrder[0])
+                focusSuggest(engineSortOrder[0]);
             })
 
             focusSuggest(engineSortOrder[0])
