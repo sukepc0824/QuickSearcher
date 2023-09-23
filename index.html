@@ -200,23 +200,20 @@
             transform: translateY(-50%);
         }
 
-        .engine-modal .info p {
-            position: relative;
-            word-wrap: normal;
-        }
-
         .engine-modal label .info {
-            position: absolute;
             left: 99%;
             top: 0%;
+            position: absolute;
             width: 240px;
             height: fit-content;
             word-wrap: normal;
+            white-space:initial;
             padding: 10px;
             background-color: #eeeeee;
             transition: all 0.1s;
             opacity: 0;
             visibility: hidden;
+            overflow-wrap: break-word;
             user-select: none;
             border: #c3c3c3 1px solid;
             box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.2);
@@ -239,7 +236,7 @@
             opacity: 1;
         }
 
-        .engine-modal label {
+        .engine-modal label{
             color: #222;
             position: relative;
             display: flex;
@@ -874,9 +871,9 @@
                 <span lang="en">Search URL:</span><input type="url" placeholder="https://google.com/search?q="
                     class="search-link"><img src="img/settings/info.svg">
                 <div class="info">
-                    <p lang="jp">URLの末に検索キーワードが続く形で入力してください。<br>
-                        また，検索キーワードは空で入力してください。</p>
-                    <p lang="en">Enter the URL followed by the search keywords. Please enter a blank search keyword.</p>
+                    <span lang="jp">URLの末に検索キーワードが続く形で入力してください。<br>
+                        また，検索キーワードは空で入力してください。</span>
+                    <span lang="en">Enter the URL followed by the search keywords. Please enter a blank search keyword.</span>
                 </div>
             </label>
             <label>
@@ -885,10 +882,10 @@
                     placeholder="https://google.com/complete/search?client=firefox&q=" class="suggest-api"><img
                     src="img/settings/info.svg">
                 <div class="info">
-                    <p lang="jp">
-                        これは開発者向けの機能です。検索エンジンのjsonP形式のサジェストAPIを取得できる場合は入力してください。json方式で取得する場合は，ブラウザのCROSを無効にしてください。</p>
-                    <p lang="en">This is a feature for developers. Please input the search engine's jsonP format
-                        suggestion API. if you want to get it in json format, please disable CROS in your browser.</p>
+                    <span lang="jp">
+                        これは開発者向けの機能です。検索エンジンのjsonP形式のサジェストAPIを取得できる場合は入力してください。json方式で取得する場合は，ブラウザのCROSを無効にしてください。</span>
+                    <span lang="en">This is a feature for developers. Please input the search engine's jsonP format
+                        suggestion API. if you want to get it in json format, please disable CROS in your browser.</span>
                 </div>
             </label>
             <div class="action">
