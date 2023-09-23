@@ -207,7 +207,7 @@
             width: 240px;
             height: fit-content;
             word-wrap: normal;
-            white-space:initial;
+            white-space: initial;
             padding: 10px;
             background-color: #eeeeee;
             transition: all 0.1s;
@@ -236,7 +236,7 @@
             opacity: 1;
         }
 
-        .engine-modal label{
+        .engine-modal label {
             color: #222;
             position: relative;
             display: flex;
@@ -568,7 +568,7 @@
             border: 1px solid #d4d4d4;
             font-size: 15px;
             border-radius: 6px;
-            padding: 5px;
+            padding: 7px;
             cursor: default;
             display: flex;
             align-items: center;
@@ -582,11 +582,11 @@
             padding-right: 28px;
         }
 
-        li.remove-text-jp ::after {
+        li.remove-text-jp::after {
             content: ' - 削除';
         }
 
-        li.remove-text-en ::after {
+        li.remove-text-en::after {
             content: ' - Remove';
         }
 
@@ -620,7 +620,8 @@
             display: none;
         }
 
-        ul.main,ul.other {
+        ul.main,
+        ul.other {
             min-height: 40px;
             min-width: 100%;
         }
@@ -635,18 +636,13 @@
             border: 1px solid #c8c8c8;
         }
 
-        li::before {
-            content: '';
-            display: inline-block;
-            width: 10px;
-            height: 20px;
-        }
 
         li label {
             text-overflow: ellipsis;
             overflow: hidden;
             white-space: nowrap;
             font-size: 15px;
+            margin-left: 10px;
         }
 
         .object.disabled {
@@ -873,7 +869,8 @@
                 <div class="info">
                     <span lang="jp">URLの末に検索キーワードが続く形で入力してください。<br>
                         また，検索キーワードは空で入力してください。</span>
-                    <span lang="en">Enter the URL followed by the search keywords. Please enter a blank search keyword.</span>
+                    <span lang="en">Enter the URL followed by the search keywords. Please enter a blank search
+                        keyword.</span>
                 </div>
             </label>
             <label>
@@ -885,7 +882,8 @@
                     <span lang="jp">
                         これは開発者向けの機能です。検索エンジンのjsonP形式のサジェストAPIを取得できる場合は入力してください。json方式で取得する場合は，ブラウザのCROSを無効にしてください。</span>
                     <span lang="en">This is a feature for developers. Please input the search engine's jsonP format
-                        suggestion API. if you want to get it in json format, please disable CROS in your browser.</span>
+                        suggestion API. if you want to get it in json format, please disable CROS in your
+                        browser.</span>
                 </div>
             </label>
             <div class="action">
@@ -1297,6 +1295,18 @@
                     focusSuggest(engineSortOrder[0])
                     engineSort();
                 })
+
+                $('button.remove').on("mouseover", function () {
+                    if ($("body").hasClass("jp")) {
+                        $(this).parents("li").addClass("remove-text-jp")
+                    } else {
+                        $(this).parents("li").addClass("remove-text-en")
+                    }
+                })
+
+                $('button.remove').on("mouseout", function () {
+                    $(this).parents("li").removeClass("remove-text-jp","remove-text-en")
+                })
             }
 
             engineSort();
@@ -1398,6 +1408,7 @@
             $('button.open-about').on("click", function () {
                 $('.about,button.open-about').toggleClass('active');
             })
+
 
             //言語設定
             function langSet(lang) {
