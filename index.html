@@ -1324,7 +1324,10 @@
 
             //ここの地獄ネストのコードどうにかならない？
             $(".contents").keydown(e => {
-                if (e.code == 'ArrowUp') {
+                  if (e.isComposing || e.key === 'Process' || e.keyCode === 229) {
+                     // IME入力中
+                  } else {
+if (e.code == 'ArrowUp') {
                     if ($("#search-box").val().length == 0) {
                         if (!$(".engine button.focus").prev().length) {
                             return false;
@@ -1398,6 +1401,8 @@
                         }
                     }
                 }
+                  }
+                
             })
             //設定項目
             $('button.open-settings').on("click", function () {
